@@ -1,25 +1,46 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import tonweb from './tonClient';
 
-function App() {
+const App = () => {
+  const [address, setAddress] = useState('');
+  const [balance, setBalance] = useState(null);
+  const [error, setError] = useState('');
+
+  const checkBalance = async () => {
+    try {
+      const addressObj = new tonweb.Address(address); // Tạo đối tượng địa chỉ
+      const accountInfo = await tonweb.provider.getAddressInfo(addressObj); // Lấy thông tin ví
+      setBalance(accountInfo.balance / 1e9); // Chuyển đổi từ nanoTON sang TON
+      setError('');
+    } catch (err) {
+      setError('Không thể tìm thấy ví này.');
+      setBalance(null);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+      <h1>DApp: Kiểm tra Balance ví TON</h1>
+      <input
+        type="text"
+        value={address}
+        onChange={(e) => setAddress(e.target.value)}
+        placeholder="Nhập địa chỉ ví TON"
+        style={{ padding: '10px', width: '100%' }}
+      />
+      <button onClick={checkBalance} style={{ margin: '10px 0', padding: '10px 20px' }}>
+        Kiểm tra Balance
+      </button>
+
+      {balance !== null && (
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+          <strong>Balance:</strong> {balance} TON
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      )}
+
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
-}
+};
 
 export default App;
